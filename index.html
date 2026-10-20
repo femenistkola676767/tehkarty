@@ -12,7 +12,10 @@ p.sub{color:var(--muted);margin:0 0 26px}
 .brand{width:100%;padding:24px;border-radius:14px;border:2px solid var(--text);background:transparent;color:var(--text);font:inherit;font-size:23px;font-weight:700;cursor:pointer;text-align:center}
 .brand:hover,.brand:focus-visible{background:var(--accent);color:var(--accent-text);border-color:var(--accent);outline:none}
 .back{position:fixed;left:var(--bx,16px);top:var(--by,calc(env(safe-area-inset-top,0px) + 14px));z-index:30;width:54px;height:54px;padding:0;margin:0;border-radius:50%;border:2px solid var(--line);background:var(--surface);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:0;text-decoration:none;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-shadow:0 4px 14px rgba(0,0,0,.35)}
-.back::before{content:"\2190";font-size:28px;line-height:1;font-weight:700}
+.back::before{content:"";display:block;width:26px;height:26px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z'/%3E%3C/svg%3E") center/contain no-repeat}
+.sw{position:fixed;right:16px;top:calc(env(safe-area-inset-top,0px) + 18px);z-index:30;display:flex;gap:8px}
+.sw .o{width:46px;height:46px;padding:0;border-radius:50%;border:2px solid;font:inherit;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.sw .o:hover{transform:scale(1.08)}
 .back:hover{border-color:var(--accent)}
 .back.drag{transform:scale(1.14);border-color:var(--accent);box-shadow:0 10px 26px rgba(0,0,0,.55)}
 .back+*{margin-top:52px}
@@ -203,6 +206,9 @@ function theme(t){const m={bg:"--bg",surface:"--surface",text:"--text",muted:"--
  for(const k in m){t?root.style.setProperty(m[k],t[k]):root.style.removeProperty(m[k])}}
 function go(v,p={}){st={...st,view:v,...p};window.scrollTo(0,0);render()}
 function render(){theme(st.f&&st.view!=="home"?FR.find(x=>x.id===st.f).t:null);st.view==="home"?home():st.view==="menu"?menu():card()}
+const ini=n=>{const w=n.split(/\s+/);return (w.length>1?w.map(x=>x[0]).join(""):n.slice(0,2)).toUpperCase()};
+function sw(){return `<div class="sw">${FR.filter(x=>x.id!==st.f).map(x=>`<button class="o" data-s="${x.id}" title="${esc(x.name)}" aria-label="${esc(x.name)}" style="background:${x.t.bg};color:${x.t.accent};border-color:${x.t.accent}">${ini(x.name)}</button>`).join("")}</div>`}
+function bindSw(){app.querySelectorAll(".sw .o").forEach(b=>b.onclick=()=>go("menu",{f:b.dataset.s,q:"",type:"all"}))}
 function home(){
  app.innerHTML=`<div class="home"><h1>Тех-карты роллов</h1><p class="sub">Выберите доставку</p><div class="brands">${FR.map(f=>`<button class="brand" data-f="${f.id}">${esc(f.name)}</button>`).join("")}</div><p class="sub" style="margin-top:28px"><a href="#admin" style="color:inherit">Админ-панель</a></p></div>`;
  app.querySelectorAll(".brand").forEach(b=>b.onclick=()=>go("menu",{f:b.dataset.f,q:"",type:"all"}));
@@ -210,10 +216,10 @@ function home(){
 function weight(s){return s.parts.reduce((a,p)=>a+(R(p[0])?R(p[0]).w*p[1]/8:0),0)|0}
 function menu(){
  const fr=FR.find(x=>x.id===st.f);
- app.innerHTML=`<button class="back" id="back">← Все доставки</button><div class="center"><h1>${esc(fr.name)}</h1></div>
+ app.innerHTML=`${sw()}<button class="back" id="back">← Все доставки</button><div class="center"><h1>${esc(fr.name)}</h1></div>
  <input class="search" id="q" type="search" placeholder="Поиск ролла или сета" value="${esc(st.q)}" autocomplete="off">
  <div class="tabs">${[["all","Всё"],["roll","Роллы"],["set","Сеты"]].map(([k,l])=>`<button class="tab ${st.type===k?"on":""}" data-t="${k}">${l}</button>`).join("")}</div><ul class="list" id="list"></ul>`;
- document.getElementById("back").onclick=()=>go("home",{f:null});
+ document.getElementById("back").onclick=()=>go("home",{f:null});bindSw();
  const q=document.getElementById("q");q.oninput=()=>{st.q=q.value;fill()};
  app.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{st.type=t.dataset.t;menu()});fill();
 }
@@ -228,7 +234,7 @@ function fill(){
 const photo=o=>o.img?`<img class="photo" src="${o.img}" alt="">`:`<div class="photo ph">Нет фото</div>`;
 const steps=a=>`<ol class="steps">${a.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>`;
 function card(){
- const it=st.item;let h=`<button class="back" id="back">← Назад к списку</button>`;
+ const it=st.item;let h=`${sw()}<button class="back" id="back">← Назад к списку</button>`;
  if(it.k==="roll"){const r=R(it.id);if(!r){go("menu");return}
   h+=`${photo(r)}<div class="center"><h1>${esc(r.name)}</h1><div class="meta"><span class="chip">Ролл</span><span class="chip">Выход: ${r.w} г</span></div></div>
   <h2>Состав</h2><div class="wrap"><table><tr><th>Ингредиент</th><th>Количество</th></tr>${r.ingr.map(x=>`<tr><td>${esc(x[0])}</td><td>${esc(x[1])}</td></tr>`).join("")}</table></div><h2>Приготовление</h2>${steps(r.steps)}`;
@@ -238,7 +244,7 @@ function card(){
   <h2>Роллеры и выдача</h2><div class="cols"><h2>Роллеры: внутри и снаружи</h2><h2>Выдача: шапочка и полив</h2>${ps.map((p,n)=>{const r=R(p[0]);return `<div class="c"><b>${n+1}. ${esc(r.name)}</b><br><span>Внутри: ${esc(r.in)}<br>Снаружи: ${esc(r.out)}</span></div><div class="c"><b>${n+1}. ${esc(r.name)}</b><br><span>${esc(r.top)}</span></div>`}).join("")}</div>
   <h2>Сборщикам</h2><ul class="pk">${(s.pack||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
  }
- app.innerHTML=h;document.getElementById("back").onclick=()=>go("menu");
+ app.innerHTML=h;document.getElementById("back").onclick=()=>go("menu");bindSw();
 }
 DB.sub(()=>{if(st.view==="menu")fill();else if(st.view==="card")render()});render();
 })()}</script></body></html>
