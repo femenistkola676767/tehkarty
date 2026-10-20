@@ -1,0 +1,226 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Тех-карты роллов</title><style>
+:root{--bg:#2b0a10;--surface:#3a1119;--text:#f6ebe4;--muted:#c9a9a4;--line:#5a2530;--accent:#e0344a;--accent-text:#fff;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:17px/1.55 "Onest","Segoe UI",system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:28px 18px 60px}
+.center{text-align:center}
+.home{min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+h1{font-size:clamp(30px,7vw,44px);line-height:1.1;margin:8px 0 6px;font-weight:700;letter-spacing:-.02em}
+h2{font-size:21px;margin:30px 0 10px}
+p.sub{color:var(--muted);margin:0 0 26px}
+.brands{display:grid;gap:14px;width:100%;max-width:420px;margin:0 auto}
+.brand{width:100%;padding:24px;border-radius:14px;border:2px solid var(--text);background:transparent;color:var(--text);font:inherit;font-size:23px;font-weight:700;cursor:pointer;text-align:center}
+.brand:hover,.brand:focus-visible{background:var(--accent);color:var(--accent-text);border-color:var(--accent);outline:none}
+.back{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:block;width:100%;text-align:left;text-decoration:none;background:var(--bg);border:0;border-bottom:1px solid var(--line);color:var(--text);font:inherit;font-weight:600;cursor:pointer;padding:14px 0;margin-bottom:10px}
+.search{width:100%;padding:15px 16px;font:inherit;border:2px solid var(--line);border-radius:12px;background:var(--surface);color:var(--text);text-align:center}
+.search:focus{outline:none;border-color:var(--accent)}
+.tabs{display:flex;gap:8px;margin:14px 0;justify-content:center;flex-wrap:wrap}
+.tab{padding:8px 16px;border-radius:99px;border:1px solid var(--line);background:none;color:var(--text);font:inherit;font-size:15px;cursor:pointer}
+.tab.on{background:var(--accent);color:var(--accent-text);border-color:var(--accent)}
+.list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.item{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:16px 6px;border-bottom:1px solid var(--line)}
+.go{cursor:pointer}.go:hover,.go:focus-visible{background:var(--surface);outline:none}
+.item small{color:var(--muted);white-space:nowrap}
+.empty{color:var(--muted);padding:24px 4px;text-align:center}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px;justify-content:center}
+.chip{border:1px solid var(--line);border-radius:99px;padding:4px 12px;font-size:14px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line)}
+td,th{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left}
+th{font-weight:600;color:var(--muted);font-size:14px}
+td:last-child,th:last-child{text-align:right;white-space:nowrap}
+.wrap{overflow-x:auto}
+ol.steps{padding-left:22px}ol.steps li{margin:0 0 10px;padding-left:4px}
+.photo{display:block;width:100%;max-height:300px;object-fit:cover;border-radius:12px;margin:4px 0 14px}
+.ph{height:200px;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px dashed var(--line);color:var(--muted)}
+.base{color:var(--muted);margin:0 0 8px}
+.comp{padding-left:24px}.comp li{margin:0 0 10px}.comp span{color:var(--muted);font-size:15px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
+.cols h2{font-size:19px}.cols .c{margin:0 0 14px}.cols .c span{color:var(--muted);font-size:15px}
+.pk{padding-left:22px}
+/* админка */
+.tools{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.btn{padding:10px 16px;border-radius:10px;border:2px solid var(--accent);background:var(--accent);color:var(--accent-text);font:inherit;cursor:pointer}
+.btn.ghost,.acts button{background:none;color:var(--text);border-color:var(--line)}
+.acts{display:flex;gap:8px;flex-shrink:0}
+.acts button{padding:6px 12px;border-radius:8px;border:1px solid var(--line);font:inherit;font-size:14px;cursor:pointer}
+.form{background:var(--surface);padding:4px 18px 18px;border-radius:12px;margin:16px 0}
+.form label{display:block;margin:12px 0 0;color:var(--muted);font-size:15px}
+.form input,.form textarea,.form select{display:block;width:100%;margin-top:4px;padding:10px 12px;font:inherit;border:2px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text)}
+.prow{display:flex;gap:8px;margin-top:8px}.prow select{flex:1;margin:0}.prow input{width:80px;margin:0}
+.prow button{border:0;background:none;color:var(--muted);font-size:20px;cursor:pointer}
+</style><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script></head><body><main id="app"></main><script>
+/* Данные и хранение. Всё хранится в браузере (localStorage). */
+const FR=[
+ {id:"star",name:"Sushi Star",t:{bg:"#0e1a3a",surface:"#17275a",text:"#f5f1e4",muted:"#a9b4d6",line:"#2c3f7a",accent:"#f2c14e",at:"#0e1a3a"}},
+ {id:"moto",name:"Moto Moto",t:{bg:"#171717",surface:"#242424",text:"#f4f1ec",muted:"#aaa39a",line:"#3b3b3b",accent:"#ff7a1a",at:"#171717"}},
+ {id:"origami",name:"Origami",t:{bg:"#0f2a24",surface:"#173a32",text:"#f3efe6",muted:"#a6c2b8",line:"#25574b",accent:"#f5b8c4",at:"#0f2a24"}}
+];
+const BASE="Базовый набор: 2 палочки, имбирь, васаби и 2 соевых соуса";
+const PACKLIST=["Соевый соус: 2 шт.","Имбирь: 30 г","Васаби: 10 г","Палочки: 2 шт."];
+const KEY="tehkarty_v1";
+function seed(){
+ const L={
+  philly:{name:"Филадельфия",w:220,ingr:[["Рис для суши","110 г"],["Нори","1/2 листа"],["Лосось","40 г"],["Сливочный сыр","30 г"],["Огурец","25 г"]],steps:["Положите нори на коврик, распределите рис.","Выложите сыр, огурец и лосось.","Скрутите, нарежьте на 8 частей."],in:"лосось, сливочный сыр, огурец",out:"без обсыпки",top:"без шапочки, без полива"},
+  cali:{name:"Калифорния",w:210,ingr:[["Рис для суши","120 г"],["Нори","1/2 листа"],["Краб","35 г"],["Авокадо","30 г"],["Тобико","20 г"],["Майонез","10 г"]],steps:["Накройте коврик плёнкой, выложите рис.","Добавьте краб с майонезом и авокадо.","Скрутите, обваляйте в тобико, нарежьте на 8 частей."],in:"краб, авокадо, майонез",out:"в тобико",top:"без шапочки, без полива"},
+  spicy:{name:"Спайси лосось",w:200,ingr:[["Рис для суши","110 г"],["Нори","1/2 листа"],["Лосось","45 г"],["Соус спайси","15 г"],["Кунжут","3 г"]],steps:["Перемешайте лосось с соусом спайси.","Скрутите ролл.","Обваляйте в кунжуте, нарежьте на 8 частей."],in:"лосось, соус спайси",out:"в кунжуте",top:"без шапочки, без полива"},
+  eel:{name:"Запечённый с угрём",w:240,ingr:[["Рис для суши","110 г"],["Нори","1/2 листа"],["Угорь","40 г"],["Сыр моцарелла","30 г"],["Соус унаги","15 г"]],steps:["Скрутите ролл с угрём и огурцом.","Нанесите сырную шапку.","Запекайте 4–5 мин при 220 °C, полейте унаги."],in:"угорь, огурец",out:"нори",top:"сырная шапочка, полит унаги"},
+  dragon:{name:"Дракон",w:230,ingr:[["Рис для суши","110 г"],["Нори","1/2 листа"],["Угорь","35 г"],["Огурец","25 г"],["Авокадо","40 г"],["Соус унаги","10 г"]],steps:["Скрутите ролл с угрём и огурцом.","Выложите тонкие ломтики авокадо.","Нарежьте, полейте унаги."],in:"угорь, огурец",out:"авокадо сверху",top:"авокадо, полит унаги"},
+  maki:{name:"Маки с тунцом",w:150,ingr:[["Рис для суши","80 г"],["Нори","1/2 листа"],["Тунец","40 г"]],steps:["Выложите рис на нори.","Положите тунца, скрутите.","Нарежьте на 6 частей."],in:"тунец",out:"нори",top:"без шапочки, без полива"}};
+ const M={star:{r:["philly","cali","spicy"],s:[{n:"Сет «Звёздный» (24 шт.)",p:[["philly",8],["cali",8],["spicy",8]]}]},
+  moto:{r:["eel","spicy","maki"],s:[{n:"Сет «Мото» (24 шт.)",p:[["eel",8],["spicy",8],["maki",8]]}]},
+  origami:{r:["dragon","philly","maki"],s:[{n:"Сет «Оригами» (22 шт.)",p:[["dragon",8],["philly",8],["maki",6]]}]}};
+ const d={rolls:[],sets:[]};
+ for(const f in M){
+  M[f].r.forEach(k=>d.rolls.push({id:f+"_"+k,f,img:"",...L[k]}));
+  M[f].s.forEach((s,i)=>d.sets.push({id:f+"_s"+i,f,name:s.n,img:"",parts:s.p.map(([k,q])=>[f+"_"+k,q]),pack:PACKLIST.slice()}));
+ }
+ return d;
+}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.rolls&&d.sets)return d}catch(e){}return seed()}
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d));return true}catch(e){alert("Не удалось сохранить: память браузера заполнена. Уберите лишние фото.");return false}}
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ===== FIREBASE: вставьте сюда данные своего проекта (см. инструкцию) ===== */
+const FB={apiKey:"AIzaSyB-guf98tS_Me4vnR0xiXjBNd_Q1x-RqAM",authDomain:"tehkarty-9f344.firebaseapp.com",projectId:"tehkarty-9f344",appId:"1:327748857471:web:a719b851314d32e2ac994a"};
+/* Пока apiKey пустой, сайт работает локально (данные только в этом браузере) */
+const DB=(()=>{
+ const cloud=!!FB.apiKey,d={rolls:[],sets:[]},subs=[],have={};
+ const api={cloud,d,loaded:!cloud,authReady:!cloud,user:null,sub:f=>subs.push(f)};
+ const emit=()=>subs.forEach(f=>f());
+ if(!cloud){
+  const l=load();d.rolls=l.rolls;d.sets=l.sets;
+  const put=async()=>{if(!save(d))throw 0;emit()};
+  api.save=async(k,o)=>{const a=k==="roll"?d.rolls:d.sets,i=a.findIndex(x=>x.id===o.id);i<0?a.push(o):a[i]=o;await put()};
+  api.del=async(k,id)=>{if(k==="roll"){d.rolls=d.rolls.filter(x=>x.id!==id);d.sets.forEach(s=>s.parts=s.parts.filter(p=>p[0]!==id))}else d.sets=d.sets.filter(x=>x.id!==id);await put()};
+  api.replace=async n=>{d.rolls=n.rolls;d.sets=n.sets;await put()};
+  return api;
+ }
+ firebase.initializeApp(FB);
+ const fs=firebase.firestore(),col=c=>fs.collection(c);
+ fs.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+ ["rolls","sets"].forEach(c=>col(c).onSnapshot(q=>{d[c]=q.docs.map(x=>x.data());have[c]=1;api.loaded=!!(have.rolls&&have.sets);emit()}));
+ api.save=(k,o)=>col(k+"s").doc(o.id).set(o);
+ api.del=async(k,id)=>{const b=fs.batch();b.delete(col(k+"s").doc(id));if(k==="roll")d.sets.forEach(s=>{if(s.parts.some(p=>p[0]===id))b.update(col("sets").doc(s.id),{parts:s.parts.filter(p=>p[0]!==id)})});await b.commit()};
+ api.replace=async n=>{const b=fs.batch();d.rolls.forEach(x=>b.delete(col("rolls").doc(x.id)));d.sets.forEach(x=>b.delete(col("sets").doc(x.id)));n.rolls.forEach(x=>b.set(col("rolls").doc(x.id),x));n.sets.forEach(x=>b.set(col("sets").doc(x.id),x));await b.commit()};
+ return api;
+})();
+addEventListener("hashchange",()=>location.reload());
+if(location.hash==="#admin"){(function(){
+const d=DB.d;let f=FR[0].id,e=null,k=null,isNew=false;
+const $=s=>document.querySelector(s),app=$("#app");
+const uid=()=>"i"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const lines=t=>t.split("\n").map(x=>x.trim()).filter(Boolean);
+function render(){
+ const rolls=d.rolls.filter(x=>x.f===f),sets=d.sets.filter(x=>x.f===f);
+ const list=(a,kind)=>a.length?`<ul class="list">${a.map(x=>`<li class="item"><b>${esc(x.name)}</b><span class="acts"><button data-act="edit" data-k="${kind}" data-id="${x.id}">Редактировать</button><button data-act="del" data-k="${kind}" data-id="${x.id}">Удалить</button></span></li>`).join("")}</ul>`:`<p class="empty">Пока пусто</p>`;
+ app.innerHTML=`<a class="back" href="#">← На сайт</a><h1>Админ-панель</h1>
+ <div class="tabs">${FR.map(x=>`<button class="tab ${x.id===f?"on":""}" data-act="fr" data-id="${x.id}">${esc(x.name)}</button>`).join("")}</div>
+ <div class="tools"><button class="btn" data-act="new" data-k="set">+ Добавить сет</button><button class="btn" data-act="new" data-k="roll">+ Добавить ролл</button></div>
+ ${e?form():""}<h2>Сеты</h2>${list(sets,"set")}<h2>Роллы</h2>${list(rolls,"roll")}
+ <h2>Данные</h2><div class="tools"><button class="btn ghost" data-act="exp">Скачать копию</button><label class="btn ghost">Загрузить копию<input type="file" id="imp" accept=".json" hidden></label><button class="btn ghost" data-act="reset">Сбросить к примеру</button></div>`;
+}
+function form(){
+ const ph=e.img?`<img class="photo" src="${e.img}" alt="">`:"";
+ const head=`<section class="form" id="form"><h2>${isNew?"Новый":"Редактировать"} ${k==="set"?"сет":"ролл"}</h2><label>Название<input id="f_name" value="${esc(e.name)}"></label><label>Фото<input id="f_img" type="file" accept="image/*"></label>${ph}`;
+ const foot=`<div class="tools"><button class="btn" data-act="save">Сохранить</button><button class="btn ghost" data-act="cancel">Отмена</button></div></section>`;
+ if(k==="roll")return head+`<label>Выход, г<input id="f_w" type="number" value="${esc(e.w)}"></label>
+ <label>Состав (по строке: название — количество)<textarea id="f_ingr" rows="6">${esc(e.ingrT)}</textarea></label>
+ <label>Приготовление (один шаг — одна строка)<textarea id="f_steps" rows="6">${esc(e.stepsT)}</textarea></label>
+ <label>Внутри (для роллеров)<input id="f_in" value="${esc(e.in)}"></label><label>Снаружи (для роллеров)<input id="f_out" value="${esc(e.out)}"></label>
+ <label>Шапочка и полив (для выдачи)<input id="f_top" value="${esc(e.top)}"></label>`+foot;
+ const opts=d.rolls.filter(x=>x.f===f);
+ return head+`<label>Роллы в сете</label>${e.parts.map(p=>`<div class="prow"><select>${opts.map(o=>`<option value="${o.id}" ${o.id===p[0]?"selected":""}>${esc(o.name)}</option>`).join("")}</select><input type="number" min="1" value="${p[1]}"><button data-act="rm" title="Убрать">×</button></div>`).join("")}
+ <div class="tools"><button class="btn ghost" data-act="addp">+ Ролл в сет</button></div>
+ <label>Для сборщиков (одна позиция — одна строка)<textarea id="f_pack" rows="4">${esc(e.packT)}</textarea></label>`+foot;
+}
+function sync(){
+ if(!e||!$("#f_name"))return;e.name=$("#f_name").value;
+ if(k==="roll"){e.w=$("#f_w").value;e.ingrT=$("#f_ingr").value;e.stepsT=$("#f_steps").value;e.in=$("#f_in").value;e.out=$("#f_out").value;e.top=$("#f_top").value}
+ else{e.parts=[...document.querySelectorAll(".prow")].map(r=>[r.querySelector("select").value,+r.querySelector("input").value||1]);e.packT=$("#f_pack").value}
+}
+function compress(file,cb){
+ const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,700/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);cb(c.toDataURL("image/jpeg",.7))};im.src=r.result};r.readAsDataURL(file);
+}
+function start(kind,obj,fresh){
+ k=kind;isNew=fresh;
+ e=JSON.parse(JSON.stringify(obj));
+ if(kind==="roll"){e.ingrT=e.ingr.map(x=>x[0]+" — "+x[1]).join("\n");e.stepsT=e.steps.join("\n")}else e.packT=(e.pack||[]).join("\n");
+ render();$("#form").scrollIntoView();
+}
+function saveItem(){
+ sync();if(!e.name.trim()){alert("Введите название");return}
+ let o;
+ if(k==="roll"){
+  const ingr=lines(e.ingrT).map(l=>{const p=l.split(/\s+[—–-]\s+|\s*\|\s*/);return [p[0],p.slice(1).join(" — ")]});
+  o={id:e.id,f:e.f,name:e.name.trim(),w:+e.w||0,img:e.img||"",ingr,steps:lines(e.stepsT),in:e.in,out:e.out,top:e.top};
+ }else{
+  const parts=e.parts.filter(p=>p[0]);if(!parts.length){alert("Добавьте хотя бы один ролл в сет");return}
+  o={id:e.id,f:e.f,name:e.name.trim(),img:e.img||"",parts,pack:lines(e.packT)};
+ }
+ DB.save(k,o).then(()=>{e=null;render()}).catch(()=>alert("Не удалось сохранить. Проверьте интернет."));
+}
+document.addEventListener("click",ev=>{
+ const b=ev.target.closest("[data-act]");if(!b)return;const a=b.dataset.act,id=b.dataset.id,kind=b.dataset.k;
+ if(a==="fr"){sync();e=null;f=id;render()}
+ else if(a==="new"){start(kind,kind==="roll"?{id:uid(),f,name:"",w:"",img:"",ingr:[],steps:[],in:"",out:"",top:""}:{id:uid(),f,name:"",img:"",parts:[[(d.rolls.find(x=>x.f===f)||{}).id||"",8]],pack:PACKLIST.slice()},true)}
+ else if(a==="edit"){start(kind,(kind==="roll"?d.rolls:d.sets).find(x=>x.id===id),false)}
+ else if(a==="del"){if(confirm("Удалить?"))DB.del(kind,id).then(()=>{e=null;render()}).catch(()=>alert("Не удалось удалить"))}
+ else if(a==="save")saveItem();
+ else if(a==="cancel"){e=null;render()}
+ else if(a==="addp"){sync();const o=d.rolls.find(x=>x.f===f);e.parts.push([o?o.id:"",8]);render()}
+ else if(a==="rm"){sync();const i=[...document.querySelectorAll(".prow")].indexOf(b.closest(".prow"));e.parts.splice(i,1);render()}
+ else if(a==="exp"){const u=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:"application/json"})),l=document.createElement("a");l.href=u;l.download="tehkarty.json";l.click()}
+ else if(a==="reset"){if(confirm("Все изменения будут потеряны. Сбросить?"))DB.replace(seed()).then(()=>{e=null;render()})}
+});
+document.addEventListener("change",ev=>{
+ if(ev.target.id==="f_img"&&ev.target.files[0]){sync();compress(ev.target.files[0],u=>{e.img=u;render()})}
+ if(ev.target.id==="imp"&&ev.target.files[0]){const r=new FileReader();r.onload=()=>{try{const n=JSON.parse(r.result);if(!n.rolls||!n.sets)throw 0;DB.replace(n).then(()=>{e=null;render()})}catch(x){alert("Файл не подходит")}};r.readAsText(ev.target.files[0])}
+});
+DB.sub(()=>{if(!e)render()});render();
+})()}else{(function(){
+const d=DB.d,app=document.getElementById("app"),root=document.documentElement;
+const R=id=>d.rolls.find(x=>x.id===id);
+let st={view:"home",f:null,q:"",type:"all",item:null};
+function theme(t){const m={bg:"--bg",surface:"--surface",text:"--text",muted:"--muted",line:"--line",accent:"--accent",at:"--accent-text"};
+ for(const k in m){t?root.style.setProperty(m[k],t[k]):root.style.removeProperty(m[k])}}
+function go(v,p={}){st={...st,view:v,...p};window.scrollTo(0,0);render()}
+function render(){theme(st.f&&st.view!=="home"?FR.find(x=>x.id===st.f).t:null);st.view==="home"?home():st.view==="menu"?menu():card()}
+function home(){
+ app.innerHTML=`<div class="home"><h1>Тех-карты роллов</h1><p class="sub">Выберите доставку</p><div class="brands">${FR.map(f=>`<button class="brand" data-f="${f.id}">${esc(f.name)}</button>`).join("")}</div><p class="sub" style="margin-top:28px"><a href="#admin" style="color:inherit">Админ-панель</a></p></div>`;
+ app.querySelectorAll(".brand").forEach(b=>b.onclick=()=>go("menu",{f:b.dataset.f,q:"",type:"all"}));
+}
+function weight(s){return s.parts.reduce((a,p)=>a+(R(p[0])?R(p[0]).w*p[1]/8:0),0)|0}
+function menu(){
+ const fr=FR.find(x=>x.id===st.f);
+ app.innerHTML=`<button class="back" id="back">← Все доставки</button><div class="center"><h1>${esc(fr.name)}</h1></div>
+ <input class="search" id="q" type="search" placeholder="Поиск ролла или сета" value="${esc(st.q)}" autocomplete="off">
+ <div class="tabs">${[["all","Всё"],["roll","Роллы"],["set","Сеты"]].map(([k,l])=>`<button class="tab ${st.type===k?"on":""}" data-t="${k}">${l}</button>`).join("")}</div><ul class="list" id="list"></ul>`;
+ document.getElementById("back").onclick=()=>go("home",{f:null});
+ const q=document.getElementById("q");q.oninput=()=>{st.q=q.value;fill()};
+ app.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{st.type=t.dataset.t;menu()});fill();
+}
+function fill(){
+ const q=st.q.trim().toLowerCase();
+ const all=d.sets.filter(x=>x.f===st.f).map(x=>({k:"set",id:x.id,name:x.name,w:weight(x)})).concat(d.rolls.filter(x=>x.f===st.f).map(x=>({k:"roll",id:x.id,name:x.name,w:x.w})));
+ const rows=all.filter(i=>(st.type==="all"||i.k===st.type)&&(!q||i.name.toLowerCase().includes(q)));
+ const ul=document.getElementById("list");
+ ul.innerHTML=rows.length?rows.map((i,n)=>`<li class="item go" tabindex="0" data-n="${n}"><b>${esc(i.name)}</b><small>${i.k==="set"?"сет":"ролл"} · ${i.w} г</small></li>`).join(""):`<li class="empty">${DB.loaded?"Ничего не найдено. Попробуйте другое название.":"Загрузка…"}</li>`;
+ ul.querySelectorAll(".item").forEach(li=>{const o=()=>go("card",{item:rows[+li.dataset.n]});li.onclick=o;li.onkeydown=e=>{if(e.key==="Enter")o()}});
+}
+const photo=o=>o.img?`<img class="photo" src="${o.img}" alt="">`:`<div class="photo ph">Нет фото</div>`;
+const steps=a=>`<ol class="steps">${a.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>`;
+function card(){
+ const it=st.item;let h=`<button class="back" id="back">← Назад к списку</button>`;
+ if(it.k==="roll"){const r=R(it.id);if(!r){go("menu");return}
+  h+=`${photo(r)}<div class="center"><h1>${esc(r.name)}</h1><div class="meta"><span class="chip">Ролл</span><span class="chip">Выход: ${r.w} г</span></div></div>
+  <h2>Состав</h2><div class="wrap"><table><tr><th>Ингредиент</th><th>Количество</th></tr>${r.ingr.map(x=>`<tr><td>${esc(x[0])}</td><td>${esc(x[1])}</td></tr>`).join("")}</table></div><h2>Приготовление</h2>${steps(r.steps)}`;
+ }else{const s=d.sets.find(x=>x.id===it.id);if(!s){go("menu");return}const ps=s.parts.filter(p=>R(p[0]));
+  h+=`${photo(s)}<div class="center"><h1>${esc(s.name)}</h1><div class="meta"><span class="chip">Сет</span><span class="chip">Выход: ~${weight(s)} г</span></div></div>
+  <h2>Состав сета</h2><p class="base">${esc(BASE)}</p><ol class="comp">${ps.map(p=>`<li><b>${esc(R(p[0]).name)}</b> — ${p[1]} шт.<br><span>${esc(R(p[0]).ingr.slice(2).map(x=>x[0].toLowerCase()).join(", "))}</span></li>`).join("")}</ol>
+  <h2>Роллеры и выдача</h2><div class="cols"><h2>Роллеры: внутри и снаружи</h2><h2>Выдача: шапочка и полив</h2>${ps.map((p,n)=>{const r=R(p[0]);return `<div class="c"><b>${n+1}. ${esc(r.name)}</b><br><span>Внутри: ${esc(r.in)}<br>Снаружи: ${esc(r.out)}</span></div><div class="c"><b>${n+1}. ${esc(r.name)}</b><br><span>${esc(r.top)}</span></div>`}).join("")}</div>
+  <h2>Сборщикам</h2><ul class="pk">${(s.pack||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+ }
+ app.innerHTML=h;document.getElementById("back").onclick=()=>go("menu");
+}
+DB.sub(()=>{if(st.view==="menu")fill();else if(st.view==="card")render()});render();
+})()}</script></body></html>
