@@ -11,7 +11,11 @@ p.sub{color:var(--muted);margin:0 0 26px}
 .brands{display:grid;gap:14px;width:100%;max-width:420px;margin:0 auto}
 .brand{width:100%;padding:24px;border-radius:14px;border:2px solid var(--text);background:transparent;color:var(--text);font:inherit;font-size:23px;font-weight:700;cursor:pointer;text-align:center}
 .brand:hover,.brand:focus-visible{background:var(--accent);color:var(--accent-text);border-color:var(--accent);outline:none}
-.back{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:block;width:100%;text-align:left;text-decoration:none;background:var(--bg);border:0;border-bottom:1px solid var(--line);color:var(--text);font:inherit;font-weight:600;cursor:pointer;padding:14px 0;margin-bottom:10px}
+.back{position:fixed;left:var(--bx,16px);top:var(--by,calc(env(safe-area-inset-top,0px) + 14px));z-index:30;width:54px;height:54px;padding:0;margin:0;border-radius:50%;border:2px solid var(--line);background:var(--surface);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:0;text-decoration:none;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.back::before{content:"\2190";font-size:28px;line-height:1;font-weight:700}
+.back:hover{border-color:var(--accent)}
+.back.drag{transform:scale(1.14);border-color:var(--accent);box-shadow:0 10px 26px rgba(0,0,0,.55)}
+.back+*{margin-top:52px}
 .search{width:100%;padding:15px 16px;font:inherit;border:2px solid var(--line);border-radius:12px;background:var(--surface);color:var(--text);text-align:center}
 .search:focus{outline:none;border-color:var(--accent)}
 .tabs{display:flex;gap:8px;margin:14px 0;justify-content:center;flex-wrap:wrap}
@@ -103,6 +107,19 @@ const DB=(()=>{
  api.del=async(k,id)=>{const b=fs.batch();b.delete(col(k+"s").doc(id));if(k==="roll")d.sets.forEach(s=>{if(s.parts.some(p=>p[0]===id))b.update(col("sets").doc(s.id),{parts:s.parts.filter(p=>p[0]!==id)})});await b.commit()};
  api.replace=async n=>{const b=fs.batch();d.rolls.forEach(x=>b.delete(col("rolls").doc(x.id)));d.sets.forEach(x=>b.delete(col("sets").doc(x.id)));n.rolls.forEach(x=>b.set(col("rolls").doc(x.id),x));n.sets.forEach(x=>b.set(col("sets").doc(x.id),x));await b.commit()};
  return api;
+})();
+(function(){
+ let x0,y0,t,drag=0,sx,sy,el,block=0;
+ const K="backpos",rt=document.documentElement,cl=(v,m)=>Math.max(8,Math.min(m-62,v));
+ function setp(x,y){rt.style.setProperty("--bx",cl(x,innerWidth)+"px");rt.style.setProperty("--by",cl(y,innerHeight)+"px")}
+ try{const p=JSON.parse(localStorage.getItem(K));if(p)setp(p.x,p.y)}catch(e){}
+ document.addEventListener("pointerdown",ev=>{const b=ev.target.closest(".back");if(!b)return;el=b;x0=ev.clientX;y0=ev.clientY;const r=b.getBoundingClientRect();sx=r.left;sy=r.top;drag=0;clearTimeout(t);t=setTimeout(()=>{drag=1;b.classList.add("drag");if(navigator.vibrate)navigator.vibrate(15)},350);try{b.setPointerCapture(ev.pointerId)}catch(e){}});
+ document.addEventListener("pointermove",ev=>{if(!el)return;const dx=ev.clientX-x0,dy=ev.clientY-y0;if(!drag){if(Math.abs(dx)+Math.abs(dy)>10)clearTimeout(t);return}setp(sx+dx,sy+dy);ev.preventDefault()});
+ const end=()=>{clearTimeout(t);if(el){el.classList.remove("drag");if(drag){block=1;setTimeout(()=>block=0,80);const r=el.getBoundingClientRect();try{localStorage.setItem(K,JSON.stringify({x:r.left,y:r.top}))}catch(e){}}}el=null;drag=0};
+ document.addEventListener("pointerup",end);document.addEventListener("pointercancel",end);
+ document.addEventListener("click",ev=>{if(block&&ev.target.closest(".back")){ev.preventDefault();ev.stopImmediatePropagation()}},true);
+ document.addEventListener("contextmenu",ev=>{if(ev.target.closest(".back"))ev.preventDefault()});
+ addEventListener("resize",()=>{const a=parseFloat(rt.style.getPropertyValue("--bx")),b=parseFloat(rt.style.getPropertyValue("--by"));if(!isNaN(a))setp(a,b)});
 })();
 addEventListener("hashchange",()=>location.reload());
 if(location.hash==="#admin"){(function(){
