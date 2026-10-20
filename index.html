@@ -133,6 +133,7 @@ function form(){
  <div class="tools"><button class="btn ghost" data-act="addp">+ Ролл в сет</button></div>
  <label>Для сборщиков (одна позиция — одна строка)<textarea id="f_pack" rows="4">${esc(e.packT)}</textarea></label>`+foot;
 }
+function guard(p,done){let ok=0;p.then(()=>{ok=1;if(done)done()}).catch(x=>{ok=1;alert("Ошибка: "+((x&&(x.code||x.message))||x))});setTimeout(()=>{if(!ok)alert("Нет связи с базой. Проверьте интернет, что в Firebase создана база Firestore и опубликованы правила.")},8000)}
 function sync(){
  if(!e||!$("#f_name"))return;e.name=$("#f_name").value;
  if(k==="roll"){e.w=$("#f_w").value;e.ingrT=$("#f_ingr").value;e.stepsT=$("#f_steps").value;e.in=$("#f_in").value;e.out=$("#f_out").value;e.top=$("#f_top").value}
@@ -157,20 +158,20 @@ function saveItem(){
   const parts=e.parts.filter(p=>p[0]);if(!parts.length){alert("Добавьте хотя бы один ролл в сет");return}
   o={id:e.id,f:e.f,name:e.name.trim(),img:e.img||"",parts,pack:lines(e.packT)};
  }
- DB.save(k,o).then(()=>{e=null;render()}).catch(()=>alert("Не удалось сохранить. Проверьте интернет."));
+ guard(DB.save(k,o));e=null;render();
 }
 document.addEventListener("click",ev=>{
  const b=ev.target.closest("[data-act]");if(!b)return;const a=b.dataset.act,id=b.dataset.id,kind=b.dataset.k;
  if(a==="fr"){sync();e=null;f=id;render()}
  else if(a==="new"){start(kind,kind==="roll"?{id:uid(),f,name:"",w:"",img:"",ingr:[],steps:[],in:"",out:"",top:""}:{id:uid(),f,name:"",img:"",parts:[[(d.rolls.find(x=>x.f===f)||{}).id||"",8]],pack:PACKLIST.slice()},true)}
  else if(a==="edit"){start(kind,(kind==="roll"?d.rolls:d.sets).find(x=>x.id===id),false)}
- else if(a==="del"){if(confirm("Удалить?"))DB.del(kind,id).then(()=>{e=null;render()}).catch(()=>alert("Не удалось удалить"))}
+ else if(a==="del"){if(confirm("Удалить?"))guard(DB.del(kind,id),()=>{e=null;render()})}
  else if(a==="save")saveItem();
  else if(a==="cancel"){e=null;render()}
  else if(a==="addp"){sync();const o=d.rolls.find(x=>x.f===f);e.parts.push([o?o.id:"",8]);render()}
  else if(a==="rm"){sync();const i=[...document.querySelectorAll(".prow")].indexOf(b.closest(".prow"));e.parts.splice(i,1);render()}
  else if(a==="exp"){const u=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:"application/json"})),l=document.createElement("a");l.href=u;l.download="tehkarty.json";l.click()}
- else if(a==="reset"){if(confirm("Все изменения будут потеряны. Сбросить?"))DB.replace(seed()).then(()=>{e=null;render()})}
+ else if(a==="reset"){if(confirm("Все изменения будут потеряны. Сбросить?"))guard(DB.replace(seed()),()=>{e=null;render()})}
 });
 document.addEventListener("change",ev=>{
  if(ev.target.id==="f_img"&&ev.target.files[0]){sync();compress(ev.target.files[0],u=>{e.img=u;render()})}
